@@ -15,6 +15,7 @@ knitr::opts_chunk$set(error = TRUE, collapse = TRUE, comment = "#>")
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(gapminder))
 suppressPackageStartupMessages(library(gridExtra))
+suppressPackageStartupMessages(library(knitr))
 ```
 
 
@@ -69,10 +70,8 @@ grid.arrange(tableGrob(lifexp_table, rows=NULL, theme=ttheme_minimal()), lifexp_
 We can of course also use `knitr::kable()` to make this table look pretty in my rendered homework. I however prefere the previously used `tableGrob` and use `grid.arrange` to display table and scatterpot next to each other.
 
 ```{r}
-knitr::kable(lifexp_table)
+kable(lifexp_table)
 ```
-
-
 
 
 
@@ -82,10 +81,21 @@ knitr::kable(lifexp_table)
 **Solution**: Perform a join, which borrows terminology from the database world, specifically SQL. 
 
 
+**Functions**:
+
+function name | purpose | type of join
+-----------|---------------|----------
+inner_join() | Returns all rows from x where there are matching values in y, and all columns from x and y. | mutating
+semi_join() | Returns all rows from x where there are matching values in y, keeping just the columns from x. | filering
+left_join() | Returns all rows from x, and all columns from x and y. | mutating
+right_join() | Returns all rows from y, and all columns from x and y. | mutating
+full_join() | Returns all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing. | mutating
+anti_join() | Returns all rows from x where there are not matching values in y, keeping just columns from x. | filtering
 
 In this activity I will create my own joins cheatsheet patterned after [Jenny's](http://stat545.com/bit001_dplyr-cheatsheet.html)
 
 Other good reseources to read about joins are:
+
 * The [Relational data chapter](http://r4ds.had.co.nz/relational-data.html) in R for Data Science.
 * Handling [missing values](https://tidyr.tidyverse.org/reference/drop_na.html) in a dataframe.
 
@@ -120,47 +130,21 @@ songs <-   "
      Hello Goodbye, Magical Mystery Tour, Paul McCartney, The Beatles
   It's Not Unusual,     Along Came Jones,      Tom Jones,          "
   
-songs <- read_csv(songs, skip = 1)
-songs
-
-
+songs <- read_csv(songs, skip = 1) 
+# another way to create a tibble through loading a `.csv` file
 ```
 
-### inner_join(artists, songs)
+### inner_join()
 
 > `inner_join(x,y)` Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned.
 
 ```{r}
 inner_join <- inner_join(artists, songs)
+kable(inner_join)
 ```
 
-Inner joins only retain observations that appear in both datasets. Therefore we loose all band members that are not in either "The Beatles", "Aerosith" or have no value "NA". This also displays that `inner_join()` saves multiple matches. Here we automatically joined on the variable `band`, since our `songs` dataset displayes multiple of `The Beatles` songs. Every observation of a `song` from `The Beatles` is therefore connected to every artist (`first`, `last`) who played in `The Beatles` and we find the artist's name twice, connected to two `songs`.
+Inner joins only retain observations that appear in both datasets. Therefore we loose all band members that are not in either "The Beatles", "Aerosith" or have no value "NA". This also displays that `inner_join()` saves multiple matches. Here we automatically joined on the variable `band`, since our `songs` dataset displayes multiple of `The Beatles` songs. Every observation of a `song` from `The Beatles` is therefore connected to every artist (`first`, `last`) who played in `The Beatles` and we find the artist's name twice, connected to two `songs`. 
 
-```{r load-xtable, echo = FALSE}
-library(xtable)
-```
-<table border = 1>
-<tr>
-<td>
-```{r results = 'asis', echo = FALSE}
-print(xtable(artists, caption = "artists"),
-      caption.placement = "top", include.rownames = FALSE, type = 'html')
-```
-</td>
-<td>
-```{r results = 'asis', echo = FALSE}
-print(xtable(songs, caption = "songs"),
-      caption.placement = "top", include.rownames = FALSE, type = 'html')
-```
-</td>
-<td>
-```{r results = 'asis', echo = FALSE}
-print(xtable(inner_join, caption = "inner_join(artists, songs)"),
-      caption.placement = "top", include.rownames = FALSE, type = 'html')
-```
-</td>
-</tr>
-</table>
 
 Using this join it is extremely important to be aware of "NA" values. I'll give an example:
 
@@ -182,222 +166,82 @@ artists_clean <- drop_na(artists_NAvalues)
 inner_join(artists_clean, songs)
 ```
 
+### semi_join()
 
-## Types of mutating join
-
-### Let's join tibbles using four mutating functions:  `left_join`, `right_join`, `inner_join` and `full_join`.
-
-### create two tibbles named `a` and `b`
+> `semi_join(x, y)`: Returns all rows from x where there are matching values in y, keeping just columns from x.
 
 ```{r}
-(a <- tibble(x1 = LETTERS[1:3], x2 = 1:3))
-(b <- tibble(x1 = LETTERS[c(1,2,4)], x3 = c("T", "F", "T")))
+semi_join(artists, songs) %>% 
+  kable()
 ```
 
-### left_join: Join matching rows from `b` to `a` by matching "x1" variable
+This is a really good example of how `semi_join()` can also be described as a filtering join. In comparison the the `inner_join()` the `semi_join()` will never duplicate matching rows of `artists` and therefore does not show us duplicated first and last names.
+
+
+### left_join() 
+
+> `left_join(x, y)`: Returns all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join
+
+
+Join matching rows from `b` to `a` by matching "x1" variable
 
 ```{r}
-left_join(a,b,by = "x1")
+left_join(artists, songs) %>% 
+  kable()
 ```
 
-### right_join: Join matching rows from `a` to `b` by matching "x1" variable.
+As we can see, this table includes all column names `first`, `last`, `instrument`, `band`,  `song`, `album`, `writer`. Futhermore all combinations of matches were returned as seen on the two rows for each name out of `The Beatles` for both songs in our data frame.
+
+### right_join()
+
+
+> `right_join()`: Returns all rows from y, and all columns from x and y. Rows in y with no match in x will have NA values in the new columns. If there are multiple matches between x and y, all combinations of the matches are returned.
 
 ```{r}
-right_join(a,b,by = "x1")
+right_join(artists, songs) %>% 
+  kable()
 ```
 
-### inner_join: Join data. Retain only rows in both sets `a` to `b` by matching "x1" variable.
+As we can see we lost our artists `Wendy`, due to the join on the `songs` dataframe this time. Otherwise the `right_join()` works like the `left_join()` only `x` and `y` play different roles. Following this logic, let's check if `left_join()` with reversed x and y contains the same information:
+
 
 ```{r}
-inner_join(a, b, by="x1")
+left_join(songs, artists) %>% 
+  kable()
 ```
 
-### full_join: Join data. Retain all values, all rows of `a` to `b` by matching "x1"
+And indeed, comparing the `first` column this join generated a dataframe containing the same information.
+
+
+### full_join()
+
+> `full_join()`: Returns all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing.
 
 ```{r}
-full_join(a,b, by="x1")
+full_join <- full_join(artists, songs)
+kable(full_join)
 ```
 
-### what happen if we do not specify `by` option?
+Let's check if all rows are indeed kept:
 
 ```{r}
-left_join(a,b)
+rows <- nrow(artists) + nrow(songs)
+rows - nrow(full_join)
 ```
 
-### what happen if we join two different variables (e.g., "x1" to "x3") from two tibbles `a` to `b`?
+The comparison of rows and the visual display of all column names shows, all data from both datasets is kept, matching and non matching.
 
-```{r}
-left_join(a,b, by= c("x1" = "x3"))
+
+### anti_join():
+
+> `anti_join()`: Returns all rows from x where there are not matching values in y, keeping just columns from x.
+
+```{r, echo=FALSE, fig.height=7}
+anti_join <- anti_join(artists, songs)
+
+grid.arrange(tableGrob(anti_join, rows=NULL), tableGrob(songs, rows=NULL), ncol=1) # let's try another approach to visualizing tables
 ```
 
-### what happen if two columns of `a` and `c` datasets have the identical colnames?
-
-```{r}
-# make data frame c and use inner_join()
-(c <- tibble(x1 = c(LETTERS[1:2],"x"), x2 = c(1,4,5)))
-left_join(a,c)
-```
-
-## In class practice
-
-`nycflights13` dataset has several tibbles e.g., `flights`, `airports`, `planes`, `weather`.
-
-### 1. Explore `nycflights13` dataset
-
-```{r}
-#check the tibbles included in `nycflights13` package
-class(flights)
-
-colnames(flights)
-
-colnames(airlines)
-
-colnames(weather)
-```
-
-### 2. Drop unimportant variables so it's easier to understand the join results. Also take first 1000 rows to run it faster.
-
-```{r}
-flights2 <- flights[1:1000,] %>% 
-  select(year, tailnum, carrier, time_hour)
-flights2
-dim(flights2)
-```
-
-### 3. Add airline names to `flights2` from `airlines` dataset.
-
-```{r}
-# Which join function to use?
-colnames(airlines)
-colnames(flights2)
-left_join(flights2, airlines)
-```
-
-### 4. Add `weather` information to the `flights2` dataset by matching "year" and "time_hour" variables.
-
-```{r}
-colnames(weather)
-flights2 %>%
-  left_join(weather, by = c("year", "time_hour"))
-```
-
-### 5. Add `weather` information to the `flights2` dataset by matching only "time_hour" variable
-
-```{r}
-flights2 %>%
-  left_join(weather, by = c("time_hour"))
-```
-
-## Types of filtering join
-
-### Let's filter tibbles using two filtering functions: `semi_join`, `anti_join` 
+Additionally, I should mention that these joins all worked without specifyig a `by=`, due to one column name `bands` matching in both dataframes and the fucntion doing a natural join. If the column name is not matching but columns do contain identical information one can join by different variables on x and y use a named vector. For example, by = c("BANDS" = "band") will match x.BANDS to y.band.
 
 
-### example for `semi_join`: All rows in `a` that have a match in `b`
-
-```{r}
-semi_join(a, b, by = "x1")
-```
-
-### example for `anti_join`: All rows in `a` that do not have a match in `b`
-
-```{r}
-anti_join(a, b)
-```
-
-### example of joinin by matching two variables (e.g., "x1", "x2") from both datasets `a` and `c`
-
-```{r}
-a
-c
-semi_join(a, c)
-```
-
-## Types of Set Operations for two datasets
-
-### Let's use three `set` functions: `intersect`, `union` and `setdiff` 
-
-### create two tibbles named `y` and `z`, similar to Data Wrangling Cheatsheet
-
-```{r}
-(y <-  tibble(x1 = LETTERS[1:3], x2 = 1:3))
-(z <- tibble(x1 = c("B", "C", "D"), x2 = 2:4))
-```
-
-### example for `intersect`: Rows that appear in both `y` and `z`
-
-```{r}
-intersect(y, z)
-```
-
-### example for `union`: Rows that appear in either or both `y` and `z`
-
-```{r}
-union(y,z)
-```
-
-### example for `setdiff`: Rows that appear in `y` but not `z`. __Caution:__ `setdiff` for `y` to `z` and `z` to `y` are different.
-
-```{r}
-setdiff(y, z)
-setdiff(z, y)
-```
-
-### what happen if colnames are differentin `y` and `x`? Is there any error message and why?
-
-```{r}
-(x <- tibble(x1 = c("B", "C", "D"), x3 = 2:4))
-#intersect(y,x)
-x
-y
-```
-
-## Types of binding datasets
-
-### Let's bind datasets by rows or column using two binding functions:
-
-### example for `bind_rows`: Append `z` to `y` as new rows
-
-```{r}
-bind_rows(y,z)
-```
-
-### example for `bind_cols`: Append `z` to `y` as new columns. __Caution__: matches rows by position. Check colnames after binding.
-
-```{r}
-bind_cols(y,z)
-```
-
-### what happen if colnames are different between `y` and `x` datasets?
-
-```{r}
-bind_cols(y,x)
-```
-
-##Practice Exercises
-Practice these concepts in the following exercises. It might help you to first identify the type of function you are applying.
-
-
-### 1. Filter the rows of `flights2` by matching "year" and "time_hour" variables to `weather` dataset. Use both `semi_join()` and `anti_join()`
-
-```{r}
-semi_join(flights2, weather)
-anti_join(flights2, weather)
-```
-
-### 2. Can we apply `set` and `binding` funcions between `flights2` and `weather` datasets. Why and why not?
-
-```{r}
-# union(flights2, weather)
-bind_rows(flights2,weather)
-# bind_cols(flights2, weather)
-```
-
-### 3. Let's create a tibble `p` with "x1" and "x2" coulmns and have duplicated element in "x1" column. Create another tibble `q` with "x1" and "x3" columns. Then apply `left_join` function `p` to `q` and `q` to `p`. 
-
-```{r}
-(p <- tibble(x1 = c("a", "b", "b", "c"), x2 = 1:4))
-(q <- tibble(x1 = c("a", "b", "c", "c"), x3 = 5:8))
-left_join(p,q)
-left_join(q,p)
-```
