@@ -8,11 +8,5 @@ This assignment and repository is developed and maintained by **Stefanie Lumnitz
 
 purpose | format
 ---------|--------
-[hw04-exercise](https://github.com/STAT545-UBC-students/hw03-slumnitz/blob/master/hw03-exercise.md) | .md
-[R markdown source code](https://github.com/STAT545-UBC-students/hw03-slumnitz/blob/master/hw03-exercise.Rmd) | .Rmd
-
-
-
-## Resources
-
-* [Gapminder dataset](https://cran.r-project.org/web/packages/gapminder/index.html)
+[hw04-exercise](https://github.com/STAT545-UBC-students/hw04-slumnitz/blob/master/hw04-exercise.md) | .md
+[R markdown source code](https://github.com/STAT545-UBC-students/hw04-slumnitz/blob/master/hw04-exercise.Rmd) | .Rmd
