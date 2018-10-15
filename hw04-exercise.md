@@ -414,6 +414,10 @@ all data from both datasets is kept, matching and non matching.
 
 ![](hw04-exercise_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
+We can see that this join als represents a filterign join. in our new
+dataframe displayed at the top are no band members anymore in the bands
+`The Beatles` or `Aerosmith`.
+
 Additionally, I should mention that these joins all worked without
 specifyig a `by=`, due to one column name `bands` matching in both
 dataframes and the fucntion doing a natural join. If the column name is

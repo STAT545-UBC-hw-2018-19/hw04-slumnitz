@@ -242,6 +242,8 @@ anti_join <- anti_join(artists, songs)
 grid.arrange(tableGrob(anti_join, rows=NULL), tableGrob(songs, rows=NULL), ncol=1) # let's try another approach to visualizing tables
 ```
 
+We can see that this join als represents a filterign join. in our new dataframe displayed at the top are no band members anymore in the bands `The Beatles` or `Aerosmith`.
+
 Additionally, I should mention that these joins all worked without specifyig a `by=`, due to one column name `bands` matching in both dataframes and the fucntion doing a natural join. If the column name is not matching but columns do contain identical information one can join by different variables on x and y use a named vector. For example, by = c("BANDS" = "band") will match x.BANDS to y.band.
 
 
